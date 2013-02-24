@@ -6,16 +6,14 @@ class User {
     var $redis;
     var $id = NOT_YET_STORED;
     var $name;
-    var $connections;
 
     function __construct($predis_conn) {
         $this->redis = $predis_conn;
-        $this->connections = array();
         $this->name = null;
         $this->id = NOT_YET_STORED;
     }
 
-    static function find($id, $connection = null) {
+    static function find($id, $connection = null, $dehydrated = false) {
         $user_key = self::getRedisUserKey($id);
         
         if (!isset($connection)) {
@@ -24,13 +22,30 @@ class User {
         try {
             $result = $connection->get($user_key);
 
+            if ($dehydrated) {
+                return $result;
+            }
+
             $user = self::hydrate($result, $connection);
             return $user;
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
         
         return NOT_YET_STORED;
+    }
+
+    static function findAll($dehydrated = false) {
+        $connection = new Predis\Client();
+
+        $user_keys = $connection->smembers('users');
+        
+        $users = array();
+        
+        foreach ($user_keys as $a_user) {
+            $users[] = json_decode($connection->get($a_user));
+        }
+        return $users;
     }
 
     static function dehydrate($user) {
@@ -99,7 +114,7 @@ class User {
             $this->redis->set($key, $data);
             $this->redis->sadd('users', $key);
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
 
         return $this->id;
@@ -111,7 +126,7 @@ class User {
             
             $this->redis->sadd(self::getRedisUserReverseConnectionKey($user_id), $this->id);
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
     }
 
@@ -129,15 +144,16 @@ class User {
                 }
             });
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
     }
 
     function removeConnection($user_id) {
         try {
             $this->redis->srem($this->redisUserConnectionKey(), $user_id);
+            $this->redis->srem(self::getRedisUserReverseConnectionKey($user_id), $this->id);
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
     }
 
@@ -146,7 +162,7 @@ class User {
             $connections = $this->redis->smembers($this->redisUserConnectionKey());
             return $connections;
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
 
         return array();
@@ -157,7 +173,7 @@ class User {
             $reverse_connections = $this->redis->smembers($this->redisUserReverseConnectionKey());
             return $reverse_connections;
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
 
         return array();
@@ -202,20 +218,22 @@ class User {
             });
 
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
+
+        return $activity;
     }
 
-    function getActivities($offset = 0, $limit = 500) {
+    function getActivities($offset = 0, $limit = 500, $dehydrated = false) {
         $activities = array();
         try {
             $activity_keys = $this->redis->lrange($this->redisUserActivityKey(), $offset, $limit);
 
             foreach($activity_keys as $a_key) {
-                $activities[] = Activity::find($a_key, $this->redis);
+                $activities[] = Activity::find($a_key, $this->redis, $dehydrated);
             }
         } catch (Exception $e) {
-            var_dump($e->getmessage()." on ".__LINE__);
+            var_dump($e->getmessage()." on ".$e->getLine());
         }
 
         return $activities;

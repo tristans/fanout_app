@@ -14,13 +14,17 @@ class Activity {
         $this->id = NOT_YET_STORED;
     }
 
-    static function find($id, $connection = null) {
+    static function find($id, $connection = null, $dehydrated = false) {
         $activity_key = self::getRedisActivityKey($id);
         if (!isset($connection)) {
             $connection = new Predis\Client();
         }
         try {
             $result = $connection->get($activity_key);
+            
+            if ($dehydrated) {
+                return $result;
+            }
 
             $activity = self::hydrate($result, $connection);
             return $activity;
