@@ -1,9 +1,10 @@
 <?php
 ini_set('memory_limit', '1024M');
+ini_set('max_execution_time', 0);
 
 require "User.php";
 
-$user_count = 500;
+$user_count = 1000;
 $activity_count = 10;
 
 $start_time = microtime(true);
@@ -29,7 +30,6 @@ foreach ($user_objects as $user) {
     echo "<br/>";
     $count++;
     $connected_user = $user;
-    usleep(10);
 }
 
 $user_finish_time = microtime(true);
@@ -42,7 +42,6 @@ foreach ($user_objects as $user) {
         $user->addActivity("some activity at: ".microtime(true));
         var_dump("per act: ".(microtime(true) - $act_1) * 1000);
         echo "<br/>";
-        usleep(100);
     }
 }
 
