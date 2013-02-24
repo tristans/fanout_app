@@ -206,10 +206,10 @@ class User {
         }
     }
 
-    function getActivities() {
+    function getActivities($offset = 0, $limit = 500) {
         $activities = array();
         try {
-            $activity_keys = $this->redis->lrange($this->redisUserActivityKey(), 0, -1);
+            $activity_keys = $this->redis->lrange($this->redisUserActivityKey(), $offset, $limit);
 
             foreach($activity_keys as $a_key) {
                 $activities[] = Activity::find($a_key, $this->redis);
