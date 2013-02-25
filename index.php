@@ -9,7 +9,7 @@ $app->get('/user/:id', function ($id) {
     echo User::dehydrate($user);
 });
 
-$app->get('/users', function () {
+$app->get('/user', function () {
     echo json_encode(User::findAll());
 });
 
@@ -58,6 +58,12 @@ $app->post('/user/:id/disconnect/:connected_id', function ($id, $connected_id) {
 $app->get('/user/:id/activity(/:offset(/:limit))', function ($id, $offset = 0, $limit = 500) {
     $user = User::find($id);
     echo json_encode($user->getActivities($offset, $limit));
+});
+
+$app->get('/activity', function() use ($app) {
+    $user_id = $app->request()->get('user_id');
+    $user = User::find($user_id);
+    echo json_encode($user->getActivities());
 });
 
 $app->post('/user/:id/activity', function($id) use ($app) {
