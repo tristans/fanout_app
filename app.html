@@ -6,9 +6,11 @@
     <body>
         <div id="user-list"></div>
         <div id="user-content"></div>
+        <div id="activity-list"></div>
 
         <script type="text/template" id="tpl-user-list-item">
-            <a href='#users/<%= id %>'><%= name %></a>
+            <a href='#users/<%= id %>'><%= name %></a> 
+            <a href='#activity/<%= id %>'>Activity for <%= name %></a>
         </script>
 
         <script type="text/template" id="tpl-user-details">
@@ -17,6 +19,10 @@
             <label Name:</label>
             <input type="text" id="name" name="name" value="<%= name %>" disabled />
             <a href="#activity/<%= id %>'>Activity</a>
+        </script>
+
+        <script type="text/template" id="tpl-activity-item">
+            <%= owner_name %> says: <%= value %>
         </script>
 
         <script type='text/javascript' src='lib/jquery-1.9.1.min.js'></script>

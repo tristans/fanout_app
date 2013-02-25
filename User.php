@@ -224,13 +224,13 @@ class User {
         return $activity;
     }
 
-    function getActivities($offset = 0, $limit = 500, $dehydrated = false) {
+    function getActivities($populate_usernames = false, $offset = 0, $limit = -1, $dehydrated = false) {
         $activities = array();
         try {
             $activity_keys = $this->redis->lrange($this->redisUserActivityKey(), $offset, $limit);
 
             foreach($activity_keys as $a_key) {
-                $activities[] = Activity::find($a_key, $this->redis, $dehydrated);
+                $activities[] = Activity::find($a_key, $this->redis, $populate_usernames, $dehydrated);
             }
         } catch (Exception $e) {
             var_dump($e->getmessage()." on ".$e->getLine());

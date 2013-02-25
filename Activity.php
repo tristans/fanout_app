@@ -6,15 +6,17 @@ class Activity {
     var $id = NOT_YET_STORED;
     var $owner_id;
     var $value;
-    
+    var $owner_name;
+
     function __construct($predis_conn) {
         $this->redis = $predis_conn;
         $this->value = null;
         $this->owner_id = null;
         $this->id = NOT_YET_STORED;
+        $this->owner_name = null;
     }
 
-    static function find($id, $connection = null, $dehydrated = false) {
+    static function find($id, $connection = null, $populate_usernames = false, $dehydrated = false) {
         $activity_key = self::getRedisActivityKey($id);
         if (!isset($connection)) {
             $connection = new Predis\Client();
@@ -26,7 +28,7 @@ class Activity {
                 return $result;
             }
 
-            $activity = self::hydrate($result, $connection);
+            $activity = self::hydrate($result, $connection, $populate_usernames);
             return $activity;
         } catch (Exception $e) {
             var_dump($e->getMessage());
@@ -52,13 +54,18 @@ class Activity {
         return json_encode($data);
     }
 
-    static function hydrate($data, $predis_conn) {
+    static function hydrate($data, $predis_conn, $populate_usernames = false) {
         $activity_data = json_decode($data);
 
         $activity = new Activity($predis_conn);
         $activity->id = $activity_data->id;
         $activity->value = $activity_data->value;
         $activity->owner_id = $activity_data->owner_id;
+
+        if ($populate_usernames) {
+            $user = User::find($activity_data->owner_id);
+            $activity->owner_name = $user->name;
+        }
 
         return $activity;
     }
