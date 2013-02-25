@@ -224,7 +224,7 @@ class User {
         return $activity;
     }
 
-    function getActivities($populate_usernames = false, $offset = 0, $limit = -1, $dehydrated = false) {
+    function getActivities($populate_usernames = false, $offset = 0, $limit = 500, $dehydrated = false) {
         $activities = array();
         try {
             $activity_keys = $this->redis->lrange($this->redisUserActivityKey(), $offset, $limit);

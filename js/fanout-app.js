@@ -1,6 +1,4 @@
 // models
-Backbone.Relational.showWarnings = false;
-
 window.User = Backbone.Model.extend();
 
 window.UserCollection = Backbone.Collection.extend({

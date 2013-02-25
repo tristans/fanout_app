@@ -62,7 +62,7 @@ $app->get('/user/:id/activity(/:offset(/:limit))', function ($id, $offset = 0, $
 
 $app->get('/activity', function() use ($app) {
     $user_id = $app->request()->get('user_id');
-    $populate_usernames = $app->request()->get('populate_usernames') || false;
+    $populate_usernames = $app->request()->get('populate_usernames') == "true";
     $user = User::find($user_id);
     echo json_encode($user->getActivities($populate_usernames));
 });
